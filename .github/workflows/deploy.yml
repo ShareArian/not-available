@@ -1,23 +1,39 @@
-name: PR Comment
+name: Node.js CI
 
 on:
-  pull_request_target:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - unlocked
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  pr-comment:
+  build:
+
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions: write-all
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: thomasbnt/hello-to-news-contributions@v1.0
-      - uses: mshick/add-pr-comment@v2
-        with:
-          repo-token: ${{ secrets.PERSONAL_TOKEN}}
-          pr-message: "gracias por tu pull request!"
-          
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install ffmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install ffmpeg
+
+    - name: Start application
+      run: npm start
+      
